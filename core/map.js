@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-03-12 13:08:57
- * @LastEditTime: 2021-03-16 08:34:44
+ * @LastEditTime: 2021-03-16 18:19:12
  * @LastEditors: your name
  * @Description:
  * @FilePath: \tourGame\core\map.js
@@ -22,23 +22,6 @@ class siteNode {
   }
   init(time) {
     this.time = time;
-  }
-  setPath(newPaths = []) {
-    //参数可以是节点或者数组
-    if (!(newPaths instanceof Array)) {
-      this.paths.push(newPaths);
-      return;
-    }
-    this.paths = [...this.paths, ...newPaths];
-  }
-  setNpc(npcs = []) {
-    //参数可以是节点或者数组
-    if (!(npcs instanceof Array)) npcs = [...this.npcs, npcs];
-    this.npcs = [...this.npcs, ...npcs];
-  }
-  setItem(item = []){
-    if (!(item instanceof Array)) item = [...this.item, item];
-    this.item = [...this.item, ...item];
   }
   set(name,values= []) {
     if (!(name instanceof Array)) {
@@ -66,11 +49,11 @@ class siteNode {
   findItem() {}
   executeEvent(role) {
     //执行地图事件
-    console.log("执行:" + this.siteName + "事件");
-    if (compPoint(role.luck, this.eventOccur)) {
+    // console.log("执行:" + this.siteName + "事件");
+    if (true) {
       //执行地点事件
       let event = getRandomObj(this.events);
-      if (event) event.execute();
+      if (event) event.execute(role,this);
     }
     //执行npc事件
     if (true) {

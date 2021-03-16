@@ -1,14 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2021-03-12 13:21:26
- * @LastEditTime: 2021-03-16 08:35:01
+ * @LastEditTime: 2021-03-16 18:01:19
  * @LastEditors: your name
  * @Description:
  * @FilePath: \tourGame\core\npc.js
  * 可以输入预定的版权声明、个性签名、空行等
  */
 import { getRandom, getRandomObj, keepTd } from "../utils/index.js";
-import { npcEventManager } from "./event.js";
+import { npcEventManager,eventProxy } from "./event.js";
 import { mapProxy } from "./map.js";
 class Method {
   allotProperty(base, property) {
@@ -41,8 +41,12 @@ class Method {
       this.donLike = [...this.donLike, ...items];
     }
   }
-  setSpellCard(spellCard) {
-    this.spellCard = spellCard;
+  set(name,values= []) {
+    if (!(name instanceof Array)) {
+      this[name] = [...this[name], values];
+      return;
+    }
+    this[name] = [...this[name], ...values];
   }
   getGf(type) {
     //0->低友好度
@@ -59,7 +63,7 @@ class Method {
   }
 }
 class npc extends Method {
-  constructor({ gf, race, recommend, site, name, risk }) {
+  constructor({ gf, race, recommend, site, name, risk,eventInfo}) {
     super();
     this.name = name;
     this.race = race; //种族
@@ -103,8 +107,9 @@ class npc extends Method {
   triggerEvent(role) {
     //为事件管理器初始化
     npcEventManager.set(role, this);
-    //判断好感度,执行普通事件
+    //判断好感度,执行普通事件[所有npc都有的事件]
     this.executeCEvent(role);
+    
     //特殊事件
     this.executeSEvent(role);
     //普通对话
@@ -120,8 +125,9 @@ class npc extends Method {
       npcEventManager.fightEvent();
     }
   }
-  executeSEvent() {
-    let e = getRandomObj(this.events);
+  executeSEvent(role) {
+    let event = getRandomObj(this.events);
+    if(event)event.execute(role,this);
   }
 }
 
@@ -133,11 +139,19 @@ export let npcProxy = {
       gf: 1,
       risk: 2,
       race: "河童",
-      site:mapProxy.siteStore["间歇泉"], //应该设置成一个数组
+      site:mapProxy.siteStore["间歇泉"], 
       recommend: `    栖息于玄武涧的河童中的一员。河童的数量众多，好像都构筑起了一个社会体系。
         就整个河童群体而言，手艺都非常精巧，擅长制作道具。好像保留着人类都难以理解的高级技术。但是那种技术只为一部分的妖怪服务。
         她的帆布包和衣服的口袋里，装着各种各样的工具，材料，燃料，谜之物质。如果只是做些物理道具，用这些应该就足够了。但听说她不太擅长做魔法道具或咒术的道具。
         有着胆小的一面，一人独处的时候，要是有人类或者其他妖怪靠近过来的话，经常撒腿就跑。在同伴圈里则是很开朗活泼，逃不掉的时候就会采取傲慢的态度。看起来像是打心底里瞧不起人类和其他的妖怪，事实上却不难看出，她这是在虚张声势。`,
     });
+    let Cirno=new npc({
+     name:"琪露诺",
+     gf:1,
+     risk:0,
+     race:"妖精",
+     site:mapProxy.siteStore["雾之湖"],
+     recommend:`平时以雾之湖作为根据地。她是湖附近妖精们中的领袖般的存在，力量也比其他妖精强。她是属于好战型的，所以必须留神。[东方求闻史纪]但是还是比较弱甚至“和杂鱼没什么区别”的角色。`,
+    })
   },
 };

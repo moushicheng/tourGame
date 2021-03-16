@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-03-04 08:38:12
- * @LastEditTime: 2021-03-15 19:52:03
+ * @LastEditTime: 2021-03-16 20:09:54
  * @LastEditors: your name
  * @Description:
  * @FilePath: \tourGame\utils\index.js
  * 可以输入预定的版权声明、个性签名、空行等
  */
-export async function speak(text) {
+export function speak(text) {
   console.log(text);
 }
 export function getRandom(num1, num2, isInt = true) { //默认返回的数字是整形
@@ -35,4 +35,11 @@ export function getRandomObj(obj,len=null){
 }
 export function compPoint(a,b){
   return getRandom(0,a)>getRandom(0,b)?true:false
+}
+export let log={
+  store:[],
+  push(text){
+      console.log(text);
+      this.store.push(text)
+  }
 }

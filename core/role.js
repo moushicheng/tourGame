@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2021-03-13 16:55:45
- * @LastEditTime: 2021-03-16 08:32:47
+ * @LastEditTime: 2021-03-16 20:22:29
  * @LastEditors: your name
  * @Description:
  * @FilePath: \tourGame\core\role.js
  * 可以输入预定的版权声明、个性签名、空行等
  */
-import { getRandom, speak, sleep} from "../utils/index";
+import { getRandom, speak, sleep,log, getRandomObj} from "../utils/index";
 class originMethod { //初始化相关函数
   setRoad(path) { //设置路径
     this.path = path;
@@ -99,6 +99,8 @@ export class role extends originMethod {
     this.curPoint = null; //当前位置
     this.weather = null;
     this.allotProperty(20, ["luck", "hp", "mp", "Stamina"]);
+    
+    this.log=[]
   }
   async run() {
     //家中整备
@@ -118,10 +120,12 @@ export class role extends originMethod {
   update(point, type) {
     if (type == "path") {
       this.Stamina -= point.time * 10;
-      speak("路径:" + point.type, point.time, this.Stamina);
+      let speaks=['赶路','奔跑','翻滚[是不是bug了?]','冲刺','散步','东张西望','寻找捷径','升级自己的xp系统']
+      log.push(`正在【${point.type}】类型道路`+getRandomObj(speaks));
     }
     if (type == "site") {
-      speak("地点 :" + point.siteName, point.time, this.Stamina);
+      let speaks=['正在休息','正在恰面包','正在充电','正在修复自身bug','萌:下一步也要打起精神呀！','萌:终于到这了,主人的任务快完成了']
+      log.push(`到达了【${point.siteName}】,`+getRandomObj(speaks));
       point.executeEvent(this);
     }
     if (this.Stamina <= 0) {
@@ -137,7 +141,7 @@ export class role extends originMethod {
   checkDeath(){
     if(this.hp<=0||this.Stamina<=0){
       this.status=0;
-      speak('萌萌卒,正在猫车回家')
+      log.push('萌萌卒,正在猫车回家')
     }
   }
   getFood(){

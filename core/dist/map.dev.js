@@ -3,9 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.map = void 0;
+exports.mapProxy = void 0;
 
-var _index = require("../../../utils/index.js");
+var _index = require("../utils/index.js");
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
@@ -32,7 +32,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 var siteNode =
 /*#__PURE__*/
 function () {
-  function siteNode(siteName) {
+  function siteNode(siteName, recommend) {
     _classCallCheck(this, siteNode);
 
     this.siteName = siteName; //地点名字
@@ -41,10 +41,12 @@ function () {
 
     this.npcs = []; //npc上会有对应的事件
 
-    this.events = []; //在节点上可能发生的事件
+    this.events = []; //特殊事件
 
     this.time = null;
     this.detect = false;
+    this.recommend = recommend;
+    this.eventOccur = (0, _index.getRandom)(7, 12);
   }
 
   _createClass(siteNode, [{
@@ -72,6 +74,25 @@ function () {
       //参数可以是节点或者数组
       if (!(npcs instanceof Array)) npcs = [].concat(_toConsumableArray(this.npcs), [npcs]);
       this.npcs = [].concat(_toConsumableArray(this.npcs), _toConsumableArray(npcs));
+    }
+  }, {
+    key: "setItem",
+    value: function setItem() {
+      var item = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      if (!(item instanceof Array)) item = [].concat(_toConsumableArray(this.item), [item]);
+      this.item = [].concat(_toConsumableArray(this.item), _toConsumableArray(item));
+    }
+  }, {
+    key: "set",
+    value: function set(name) {
+      var values = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+
+      if (!(name instanceof Array)) {
+        this[name] = [].concat(_toConsumableArray(this[name]), [values]);
+        return;
+      }
+
+      this[name] = [].concat(_toConsumableArray(this[name]), _toConsumableArray(values));
     }
   }, {
     key: "findRoad",
@@ -111,16 +132,39 @@ function () {
 
       this.detect = false;
     }
+  }, {
+    key: "findItem",
+    value: function findItem() {}
+  }, {
+    key: "executeEvent",
+    value: function executeEvent(role) {
+      //执行地图事件
+      console.log("执行:" + this.siteName + "事件");
+
+      if ((0, _index.compPoint)(role.luck, this.eventOccur)) {
+        //执行地点事件
+        var event = (0, _index.getRandomObj)(this.events);
+        if (event) event.execute();
+      } //执行npc事件
+
+
+      if (true) {
+        //执行npc事件
+        var npc = (0, _index.getRandomObj)(this.npcs); //获得一个npc
+
+        if (npc) npc.triggerEvent(role);
+      }
+    }
   }]);
 
   return siteNode;
 }();
 
 var typeEffect = {
-  森林: 1.1,
-  平原: 1,
-  山川: 1.2,
-  河道: 1.1
+  森林: 0.5,
+  平原: 0,
+  山川: 1,
+  河道: 0.5
 };
 
 var pathNode = function pathNode(type, len, endSite) {
@@ -132,10 +176,11 @@ var pathNode = function pathNode(type, len, endSite) {
   this.len = len; //道路长度
 
   this.endSite = endSite;
+  this.time = null;
 };
 
 var hakureiJinja = new siteNode("博丽神社");
-var geyser = new siteNode("间歇泉");
+var geyser = new siteNode("间歇泉", "妖怪之山山麓的温泉地带（通称·地狱谷间歇泉中心）。这里因为有怨灵的涌出，人类靠近会非常危险。怨灵是会伤害到人类和妖怪的幽灵，至于涌出的理由，应该是和地狱连接在一起的缘故吧。正是因为怨灵的关系，人类和妖怪不怎么靠近这里。她这样的神灵是几乎不会受到怨灵影响的，所以才会担任这里的管理一职。虽说只是从地底泄漏出来的而已，但是至今仍有怨灵在四处飘荡。如果她是故意将这些怨灵放任不管的话，必须要多加小心了。");
 var lDBarrier = new siteNode("幽冥结界");
 var whiteTower = new siteNode("白玉楼");
 var humanVillage = new siteNode("人类村落");
@@ -175,7 +220,7 @@ function setPath(siteA) {
         len = _config$_i[1],
         node = _config$_i[2];
 
-    siteA.setPath(new pathNode(type, len, node));
+    siteA.set('paths', new pathNode(type, len, node));
   }
 }
 
@@ -207,10 +252,41 @@ setPath(fall, ["山川", 1, moriyaShrine], ["山川", 1, toad]);
 setPath(moriyaShrine, ["山川", 1, fall]);
 setPath(sanzuRiver, ["河道", 1, otherWorld], ["平原", 2, toad]);
 setPath(otherWorld, ["河道", 1, sanzuRiver]);
-var map = {
-  siteStore: [hakureiJinja, geyser, lDBarrier, whiteTower, humanVillage, yakumoHouse, sky, scrapPavilion, devilMansion, chatArea, ponor, magicForest, kourindou, lostForest, eternityHouse, marisaHouse, genbuRavine, unHouse, AliceHouse, flower, wood, think, wuyuan, toad, monsterMountain, fall, moriyaShrine, sanzuRiver, otherWorld],
+var mapProxy = {
+  siteStore: {
+    博丽神社: hakureiJinja,
+    间歇泉: geyser,
+    幽冥结界: lDBarrier,
+    白玉楼: whiteTower,
+    人类村落: humanVillage,
+    八云紫之屋: yakumoHouse,
+    有顶天: sky,
+    废弃洋馆: scrapPavilion,
+    红魔馆: devilMansion,
+    雾之湖: chatArea,
+    水洞: ponor,
+    魔法之森: magicForest,
+    香霖堂: kourindou,
+    迷途之森: lostForest,
+    永远亭: eternityHouse,
+    雾雨魔法店: marisaHouse,
+    玄武涧: genbuRavine,
+    无名之丘: unHouse,
+    爱丽丝之邸: AliceHouse,
+    太阳花田: flower,
+    没有尽头的前方屹立的树: wood,
+    再思之道: think,
+    无缘塚: wuyuan,
+    大蟾蜍之泽: toad,
+    妖怪之山: monsterMountain,
+    九天瀑布: fall,
+    守矢神社: moriyaShrine,
+    三途之河: sanzuRiver,
+    彼岸: otherWorld
+  },
   startPoint: hakureiJinja,
   endPoints: [marisaHouse, otherWorld, whiteTower, eternityHouse, marisaHouse],
+  isSetOrigin: false,
   getAllPaths: function getAllPaths(site1, site2) {
     var roadStore = {
       len: 0,
@@ -220,6 +296,7 @@ var map = {
     site1.findRoad(site2, roadStore, result);
     return result;
   },
+  // getSite(site) {},
   getPath: function getPath() {
     var sp = this.startPoint;
     var ep = this.endPoints[(0, _index.getRandom)(0, 4)];
@@ -285,4 +362,4 @@ var map = {
     return count;
   }
 };
-exports.map = map;
+exports.mapProxy = mapProxy;
